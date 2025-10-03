@@ -1,4 +1,5 @@
-﻿using Microsoft.AspNetCore.Mvc;
+﻿using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Mvc;
 using ConsultationApp.Dto;
 using ConsultationApp.Services;
 
@@ -6,54 +7,58 @@ namespace ConsultationApp.Controllers
 {
     [ApiController]
     [Route("api/[controller]")]
-    public class ConsultantsController : ControllerBase
+    public class ConsultationsController : ControllerBase
     {
-        private readonly IConsultantService _consultantService;
+        private readonly IConsultationService _consultationService;
 
-        public ConsultantsController(IConsultantService consultantService)
+        public ConsultationsController(IConsultationService consultationService)
         {
-            _consultantService = consultantService;
+            _consultationService = consultationService;
         }
 
         [HttpGet]
-        public async Task<ActionResult<IEnumerable<ConsultantDto>>> GetConsultants()
+        [Authorize] // ← Защищённый маршрут
+        public async Task<ActionResult<IEnumerable<ConsultationDto>>> GetConsultations()
         {
-            var consultants = await _consultantService.GetAllConsultantsAsync();
-            return Ok(consultants);
+            var consultations = await _consultationService.GetAllConsultationsAsync();
+            return Ok(consultations);
         }
 
         [HttpGet("{id}")]
-        public async Task<ActionResult<ConsultantDto>> GetConsultant(int id)
+        [Authorize] // ← Защищённый маршрут
+        public async Task<ActionResult<ConsultationDto>> GetConsultation(int id)
         {
-            var consultant = await _consultantService.GetConsultantByIdAsync(id);
-            if (consultant == null)
+            var consultation = await _consultationService.GetConsultationByIdAsync(id);
+            if (consultation == null)
             {
                 return NotFound();
             }
-            return Ok(consultant);
+            return Ok(consultation);
         }
 
         [HttpPost]
-        public async Task<ActionResult<ConsultantDto>> CreateConsultant([FromBody] CreateConsultantDto dto)
+        [Authorize] // ← Защищённый маршрут
+        public async Task<ActionResult<ConsultationDto>> CreateConsultation([FromBody] CreateConsultationDto dto)
         {
             if (!ModelState.IsValid)
             {
                 return BadRequest(ModelState);
             }
 
-            var created = await _consultantService.CreateConsultantAsync(dto);
-            return CreatedAtAction(nameof(GetConsultant), new { id = created.Id }, created);
+            var created = await _consultationService.CreateConsultationAsync(dto);
+            return CreatedAtAction(nameof(GetConsultation), new { id = created.Id }, created);
         }
 
         [HttpPut("{id}")]
-        public async Task<IActionResult> UpdateConsultant(int id, [FromBody] UpdateConsultantDto dto)
+        [Authorize] // ← Защищённый маршрут
+        public async Task<IActionResult> UpdateConsultation(int id, [FromBody] UpdateConsultationDto dto)
         {
             if (!ModelState.IsValid)
             {
                 return BadRequest(ModelState);
             }
 
-            var success = await _consultantService.UpdateConsultantAsync(id, dto);
+            var success = await _consultationService.UpdateConsultationAsync(id, dto);
             if (!success)
             {
                 return NotFound();
@@ -62,9 +67,10 @@ namespace ConsultationApp.Controllers
         }
 
         [HttpDelete("{id}")]
-        public async Task<IActionResult> DeleteConsultant(int id)
+        [Authorize] // ← Защищённый маршрут
+        public async Task<IActionResult> DeleteConsultation(int id)
         {
-            var success = await _consultantService.DeleteConsultantAsync(id);
+            var success = await _consultationService.DeleteConsultationAsync(id);
             if (!success)
             {
                 return NotFound();
